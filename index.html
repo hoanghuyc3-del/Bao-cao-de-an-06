@@ -1,0 +1,1530 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hệ thống Thu thập & Thống kê Số liệu Đề án 06 - Trường THCS&THPT Nà Phặc</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              dark: '#082c6c',
+              primary: '#0d3b8e',
+              light: '#1652bd',
+              bg: '#f1f5f9'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #eef2f7;
+    }
+    /* Custom scrollbar for tables */
+    .table-container::-webkit-scrollbar {
+      height: 8px;
+      width: 8px;
+    }
+    .table-container::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 6px;
+    }
+    .table-container::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 6px;
+    }
+    .table-container::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body class="text-slate-800 antialiased min-h-screen flex flex-col">
+
+  <!-- Toast / Message Box Notification -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none px-4 sm:px-0"></div>
+
+  <!-- Top Administrative Header -->
+  <header class="bg-[#0d3b8e] text-white shadow-md border-b border-blue-950">
+    <div class="max-w-7xl mx-auto px-3 sm:px-6 py-3 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3">
+      <!-- Left: Emblem & Title -->
+      <div class="flex items-center gap-3">
+        <!-- SVG Emblem -->
+        <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-white flex items-center justify-center shrink-0 shadow-sm border-2 border-emerald-500 p-1">
+          <svg viewBox="0 0 64 64" class="w-full h-full">
+            <circle cx="32" cy="32" r="29" fill="none" stroke="#15803d" stroke-width="2.5"/>
+            <path d="M18 38 C18 25, 46 25, 46 38" fill="none" stroke="#15803d" stroke-width="2.5"/>
+            <path d="M22 42 L32 22 L42 42 Z" fill="#dcfce7" stroke="#15803d" stroke-width="2"/>
+            <text x="32" y="51" text-anchor="middle" font-size="9" font-weight="800" fill="#0d3b8e">ĐA06</text>
+          </svg>
+        </div>
+        <div>
+          <div class="flex flex-wrap items-center gap-2">
+            <h1 class="text-sm sm:text-base md:text-lg font-extrabold tracking-tight uppercase leading-tight">
+              SỞ GIÁO DỤC VÀ ĐÀO TẠO TỈNH THÁI NGUYÊN - TRƯỜNG THCS&THPT NÀ PHẶC
+            </h1>
+            <span id="connection-badge" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500 text-white shadow-sm">
+              <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span>
+              <span id="connection-badge-text">Đã kết nối Google Sheets Online</span>
+            </span>
+          </div>
+          <p class="text-xs text-blue-100 mt-0.5">
+            Hệ thống Nhập liệu & Thống kê Đề án 06 (An sinh xã hội) • 21 Lớp • 840 Học sinh (Sheet T47)
+          </p>
+        </div>
+      </div>
+
+      <!-- Right: Navigation Tabs -->
+      <nav class="flex flex-wrap items-center gap-2 w-full lg:w-auto justify-start lg:justify-end">
+        <button onclick="switchTab('tab-input')" id="btn-tab-input"
+          class="tab-btn flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs sm:text-sm font-bold bg-white text-[#0d3b8e] shadow-sm transition-all cursor-pointer">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+          </svg>
+          <span>1. GVCN Nhập Liệu</span>
+        </button>
+
+        <button onclick="switchTab('tab-summary')" id="btn-tab-summary"
+          class="tab-btn flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs sm:text-sm font-bold bg-blue-900/70 text-blue-100 hover:bg-blue-800 transition-all cursor-pointer">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+          <span>2. Tổng Hợp & Danh Sách</span>
+        </button>
+
+        <button onclick="switchTab('tab-admin')" id="btn-tab-admin"
+          class="tab-btn flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs sm:text-sm font-bold bg-amber-500 text-slate-900 hover:bg-amber-400 shadow-sm transition-all cursor-pointer">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+          </svg>
+          <span>3. Quản Trị & Google Sheets</span>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 py-5">
+
+    <!-- =================================================================== -->
+    <!-- TAB 1: GVCN NHẬP LIỆU                                               -->
+    <!-- =================================================================== -->
+    <section id="tab-input" class="tab-content bg-white rounded-xl shadow-sm border border-slate-200 border-t-4 border-t-[#0d3b8e] p-4 sm:p-6">
+      <!-- Header row inside card -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-200">
+        <div>
+          <h2 class="text-lg sm:text-xl font-extrabold text-slate-900 uppercase tracking-tight">
+            PHIẾU THU THẬP SỐ LIỆU ĐỀ ÁN 06 (AN SINH XÃ HỘI)
+          </h2>
+          <p class="text-xs sm:text-sm text-slate-500 mt-1">
+            Tích hợp sẵn danh sách <strong class="text-slate-700">21 lớp (840 học sinh)</strong> hai cấp THCS & THPT kèm Giáo viên chủ nhiệm. Số liệu bằng 0 nhập <code class="bg-slate-100 px-1.5 py-0.5 rounded text-slate-700 font-semibold">0</code>.
+          </p>
+        </div>
+        <button onclick="syncFromGoogleSheets()" class="inline-flex items-center justify-center gap-2 px-3.5 py-2 rounded-lg border border-blue-200 bg-blue-50 hover:bg-blue-100 text-[#0d3b8e] text-xs sm:text-sm font-semibold transition-colors cursor-pointer shrink-0">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          </svg>
+          <span>Làm mới dữ liệu từ Sheets</span>
+        </button>
+      </div>
+
+      <!-- Filter Box (Blue tinted card like reference) -->
+      <div class="mt-4 bg-[#f0f6ff] border border-blue-200 rounded-xl p-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3.5 items-start">
+          <!-- 1. Cấp học -->
+          <div class="lg:col-span-2">
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">
+              1. CẤP HỌC <span class="text-red-500">*</span>
+            </label>
+            <select id="filter-level" onchange="handleLevelChange()" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2.5 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="ALL">Tất cả (21 lớp)</option>
+              <option value="THCS">Cấp THCS (11 lớp)</option>
+              <option value="THPT">Cấp THPT (10 lớp)</option>
+            </select>
+          </div>
+
+          <!-- 2. Tên lớp -->
+          <div class="lg:col-span-4">
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">
+              2. TÊN LỚP & GVCN <span class="text-red-500">*</span>
+            </label>
+            <div class="relative">
+              <select id="filter-class" onchange="handleClassChange()" class="w-full bg-white border border-blue-400 rounded-lg px-3 py-2.5 text-sm font-bold text-[#0d3b8e] focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <!-- Populated by JS -->
+              </select>
+            </div>
+            <div id="class-status-text" class="mt-1.5 flex items-center gap-1.5 text-xs font-semibold text-emerald-700">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+
+          <!-- 3. Tuần báo cáo -->
+          <div class="lg:col-span-2">
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">
+              3. TUẦN BÁO CÁO (SHEET)
+            </label>
+            <select id="input-week" onchange="handleWeekChange()" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2.5 text-sm font-bold text-[#0d3b8e] focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="T46">Tuần 46 (Sheet T46)</option>
+              <option value="T47" selected>Tuần 47 (Sheet T47)</option>
+              <option value="T48">Tuần 48 (Sheet T48)</option>
+              <option value="T49">Tuần 49 (Sheet T49)</option>
+              <option value="T50">Tuần 50 (Sheet T50)</option>
+            </select>
+          </div>
+
+          <!-- 4. Giáo viên chủ nhiệm -->
+          <div class="lg:col-span-2">
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">
+              GIÁO VIÊN CHỦ NHIỆM <span class="text-red-500">*</span>
+            </label>
+            <input type="text" id="input-reporter" placeholder="Họ tên GVCN..."
+              class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2.5 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          </div>
+
+          <!-- 5. SĐT liên hệ -->
+          <div class="lg:col-span-2">
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">
+              SĐT LIÊN HỆ
+            </label>
+            <input type="tel" id="input-phone" placeholder="Nhập SĐT..."
+              class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 1: THỐNG KÊ SỐ LIỆU CỦA LỚP -->
+      <div class="mt-6">
+        <div class="bg-[#dbeafe] text-[#0d3b8e] px-4 py-2.5 rounded-lg font-extrabold text-xs sm:text-sm uppercase tracking-wide flex flex-wrap items-center justify-between gap-2">
+          <span>PHẦN 1. SỐ LIỆU TIẾN ĐỘ THỰC HIỆN ĐỀ ÁN 06 TRÊN VNEID (<span id="sec1-class-title">LỚP 6A</span>)</span>
+          <span id="display-class-meta" class="text-xs font-bold bg-white/80 text-[#0d3b8e] px-2.5 py-0.5 rounded-md border border-blue-200">THCS • Sĩ số: 34 HS</span>
+        </div>
+        <p class="text-xs sm:text-sm font-semibold text-slate-700 mt-3 mb-2">
+          Bảng 1.1. Thống kê kết quả hoàn thành từng chỉ tiêu (Chỉ phân loại Đã đăng ký / hoàn thành và Chưa đăng ký / chưa hoàn thành)
+        </p>
+
+        <div class="table-container overflow-x-auto border border-slate-300 rounded-lg">
+          <table class="w-full text-sm border-collapse min-w-[720px]">
+            <thead>
+              <tr class="bg-slate-100 text-slate-800 border-b border-slate-300 text-xs uppercase">
+                <th class="py-3 px-3 text-left font-bold border-r border-slate-300 w-10">STT</th>
+                <th class="py-3 px-3 text-left font-bold border-r border-slate-300">Nội dung chỉ tiêu Đề án 06</th>
+                <th class="py-3 px-3 text-center font-bold border-r border-slate-300 w-32">Đối tượng áp dụng</th>
+                <th class="py-3 px-3 text-center font-bold border-r border-slate-300 w-36 bg-emerald-50/70 text-emerald-900">Đã đăng ký / Hoàn thành</th>
+                <th class="py-3 px-3 text-center font-bold border-r border-slate-300 w-36 bg-rose-50/70 text-rose-900">Chưa đăng ký / Chưa xong</th>
+                <th class="py-3 px-3 text-center font-bold border-r border-slate-300 w-24">Tổng cộng</th>
+                <th class="py-3 px-3 text-center font-bold w-24">Tỷ lệ (%)</th>
+              </tr>
+            </thead>
+            <tbody id="class-metrics-tbody" class="divide-y divide-slate-200">
+              <!-- Rendered dynamically by JS -->
+            </tbody>
+          </table>
+        </div>
+        <div id="thpt-note-box" class="mt-2 text-xs text-slate-500 italic">
+          * Lưu ý: Chỉ tiêu "Đăng ký chữ ký số trên VNeID" chỉ thống kê đối với học sinh cấp THPT. Tài khoản An sinh xã hội áp dụng cho học sinh đủ 14 tuổi trở lên đã định danh mức 2.
+        </div>
+      </div>
+
+      <!-- SECTION 2: DANH SÁCH HỌC SINH CHƯA HOÀN THÀNH CỦA LỚP -->
+      <div class="mt-7">
+        <div class="bg-[#dbeafe] text-[#0d3b8e] px-4 py-2.5 rounded-lg font-extrabold text-xs sm:text-sm uppercase tracking-wide flex flex-wrap items-center justify-between gap-2">
+          <span>PHẦN 2. DANH SÁCH HỌC SINH CỦA LỚP CHƯA HOÀN THÀNH NỘI DUNG (<span id="sec2-class-title">LỚP 6A</span>)</span>
+          <span id="sec2-count-badge" class="bg-[#0d3b8e] text-white text-xs px-2.5 py-0.5 rounded-full">0 học sinh</span>
+        </div>
+
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mt-3 mb-2">
+          <p class="text-xs sm:text-sm text-slate-600">
+            Cập nhật danh sách học sinh còn thiếu nội dung và ghi rõ lý do vướng mắc (không có điện thoại, quên mật khẩu, lỗi hệ thống...).
+          </p>
+          <button onclick="openAddStudentModal()" class="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-sm transition-colors cursor-pointer shrink-0">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+            </svg>
+            <span>+ Thêm học sinh chưa hoàn thành</span>
+          </button>
+        </div>
+
+        <div class="table-container overflow-x-auto border border-slate-300 rounded-lg">
+          <table class="w-full text-sm border-collapse min-w-[760px]">
+            <thead>
+              <tr class="bg-slate-100 text-slate-800 border-b border-slate-300 text-xs uppercase">
+                <th class="py-2.5 px-3 text-center font-bold border-r border-slate-300 w-12">STT</th>
+                <th class="py-2.5 px-3 text-left font-bold border-r border-slate-300 w-48">Họ và tên học sinh</th>
+                <th class="py-2.5 px-2 text-center font-bold border-r border-slate-300 w-20">Thiếu CCCD</th>
+                <th class="py-2.5 px-2 text-center font-bold border-r border-slate-300 w-24">Chưa ĐD Mức 2</th>
+                <th class="py-2.5 px-2 text-center font-bold border-r border-slate-300 w-24">Chưa SSKĐT</th>
+                <th class="py-2.5 px-2 text-center font-bold border-r border-slate-300 w-24">Chưa Chữ ký số</th>
+                <th class="py-2.5 px-3 text-left font-bold border-r border-slate-300">Ghi rõ lý do chưa hoàn thành</th>
+                <th class="py-2.5 px-2 text-center font-bold w-20">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody id="class-students-tbody" class="divide-y divide-slate-200">
+              <!-- Rendered dynamically by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Bottom Submit Bar -->
+      <div class="mt-6 pt-4 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div class="text-xs text-slate-500">
+          Dữ liệu được lưu tự động trên trình duyệt và ghi trực tiếp vào đúng dòng/cột của sheet tuần trên Google Sheets.
+        </div>
+        <button onclick="saveCurrentClassReport()" id="btn-save-report"
+          class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[#0d3b8e] hover:bg-[#082c6c] text-white font-bold text-sm shadow-md hover:shadow-lg transition-all cursor-pointer">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+          </svg>
+          <span>LƯU & GỬI BÁO CÁO LÊN GOOGLE SHEETS</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- TAB 2: TỔNG HỢP TOÀN TRƯỜNG & DANH SÁCH CHƯA HOÀN THÀNH             -->
+    <!-- =================================================================== -->
+    <section id="tab-summary" class="tab-content hidden space-y-6">
+      <!-- KPI Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4" id="kpi-cards-container">
+        <!-- Populated dynamically -->
+      </div>
+
+      <!-- Full School Summary Table -->
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 border-t-4 border-t-[#0d3b8e] p-4 sm:p-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-200">
+          <div>
+            <h2 class="text-base sm:text-lg font-extrabold text-slate-900 uppercase">
+              BẢNG TỔNG HỢP TIẾN ĐỘ ĐỀ ÁN 06 TOÀN TRƯỜNG (21 LỚP - <span id="summary-week-label">TUẦN 47</span>)
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">
+              Số liệu tự động cộng dồn từ 11 lớp THCS (410 HS) và 10 lớp THPT (430 HS).
+            </p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <button onclick="exportSummaryCSV()" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-sm transition-colors cursor-pointer">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+              </svg>
+              <span>Xuất Excel (.csv) Bảng Tổng Hợp</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="mt-4 table-container overflow-x-auto border border-slate-300 rounded-lg">
+          <table class="w-full text-xs sm:text-sm border-collapse min-w-[1060px]">
+            <thead>
+              <tr class="bg-[#0d3b8e] text-white text-center text-xs">
+                <th rowspan="2" class="py-2.5 px-2 border border-blue-800 w-10">STT</th>
+                <th rowspan="2" class="py-2.5 px-2 border border-blue-800 w-16">Lớp</th>
+                <th rowspan="2" class="py-2.5 px-3 border border-blue-800 text-left min-w-[165px]">Giáo viên chủ nhiệm</th>
+                <th rowspan="2" class="py-2.5 px-2 border border-blue-800 w-16">Sĩ số</th>
+                <th colspan="2" class="py-1.5 px-2 border border-blue-800 bg-blue-950/60">Cấp CCCD</th>
+                <th colspan="2" class="py-1.5 px-2 border border-blue-800 bg-blue-800/80">Định danh Mức 2</th>
+                <th colspan="2" class="py-1.5 px-2 border border-blue-800 bg-emerald-800/80">Sổ Sức Khỏe ĐT</th>
+                <th colspan="2" class="py-1.5 px-2 border border-blue-800 bg-indigo-900/70">TK An Sinh Xã Hội</th>
+                <th colspan="2" class="py-1.5 px-2 border border-blue-800 bg-amber-700/80">Chữ Ký Số (THPT)</th>
+              </tr>
+              <tr class="bg-slate-100 text-slate-800 text-[11px] font-bold uppercase text-center">
+                <th class="py-2 px-1.5 border border-slate-300 text-emerald-800">Đã ĐK</th>
+                <th class="py-2 px-1.5 border border-slate-300 text-rose-700">Chưa ĐK</th>
+                <th class="py-2 px-1.5 border border-slate-300 text-emerald-800">Đã ĐK</th>
+                <th class="py-2 px-1.5 border border-slate-300 text-rose-700">Chưa ĐK</th>
+                <th class="py-2 px-1.5 border border-slate-300 text-emerald-800">Đã ĐK</th>
+                <th class="py-2 px-1.5 border border-slate-300 text-rose-700">Chưa ĐK</th>
+                <th class="py-2 px-1.5 border border-slate-300 text-emerald-800">Đã ĐK</th>
+                <th class="py-2 px-1.5 border border-slate-300 text-rose-700">Chưa ĐK</th>
+                <th class="py-2 px-1.5 border border-slate-300 text-emerald-800">Đã ĐK</th>
+                <th class="py-2 px-1.5 border border-slate-300 text-rose-700">Chưa ĐK</th>
+              </tr>
+            </thead>
+            <tbody id="summary-all-classes-tbody" class="divide-y divide-slate-200">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Full Unfinished Students Directory -->
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 border-t-4 border-t-amber-500 p-4 sm:p-6">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-4 border-b border-slate-200">
+          <div>
+            <h2 class="text-base sm:text-lg font-extrabold text-slate-900 uppercase">
+              DANH SÁCH HỌC SINH CHƯA HOÀN THÀNH TOÀN TRƯỜNG (<span id="total-unfinished-count">56</span> HỌC SINH)
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">
+              Tra cứu theo lớp, nội dung chưa hoàn thành hoặc tên học sinh / lý do vướng mắc.
+            </p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <select id="search-student-class" onchange="renderAllUnfinishedStudents()" class="bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs font-semibold text-slate-700">
+              <option value="ALL">Tất cả các lớp</option>
+            </select>
+            <select id="search-student-type" onchange="renderAllUnfinishedStudents()" class="bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs font-semibold text-slate-700">
+              <option value="ALL">Tất cả nội dung thiếu</option>
+              <option value="cccd">Thiếu CCCD</option>
+              <option value="vneid2">Chưa ĐD mức 2</option>
+              <option value="ssk">Chưa SSKĐT</option>
+              <option value="cks">Chưa Chữ ký số</option>
+            </select>
+            <input type="text" id="search-student-keyword" oninput="renderAllUnfinishedStudents()" placeholder="Tìm tên HS hoặc lý do..."
+              class="bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs font-medium text-slate-800 w-44 sm:w-56 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <button onclick="exportStudentsCSV()" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold transition-colors cursor-pointer">
+              <span>Xuất Excel (.csv) DS HS</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="mt-4 table-container overflow-x-auto border border-slate-300 rounded-lg max-h-[520px]">
+          <table class="w-full text-xs sm:text-sm border-collapse min-w-[780px]">
+            <thead class="sticky top-0 z-10">
+              <tr class="bg-slate-100 text-slate-800 border-b border-slate-300 text-xs uppercase">
+                <th class="py-2.5 px-2 text-center font-bold border-r border-slate-300 w-12">STT</th>
+                <th class="py-2.5 px-3 text-left font-bold border-r border-slate-300 w-48">Họ và tên học sinh</th>
+                <th class="py-2.5 px-2 text-center font-bold border-r border-slate-300 w-16">Lớp</th>
+                <th class="py-2.5 px-2 text-center font-bold border-r border-slate-300 w-20">Thiếu CCCD</th>
+                <th class="py-2.5 px-2 text-center font-bold border-r border-slate-300 w-24">Chưa ĐD Mức 2</th>
+                <th class="py-2.5 px-2 text-center font-bold border-r border-slate-300 w-24">Chưa SSKĐT</th>
+                <th class="py-2.5 px-2 text-center font-bold border-r border-slate-300 w-24">Chưa Chữ ký số</th>
+                <th class="py-2.5 px-3 text-left font-bold">Lý do chưa hoàn thành</th>
+              </tr>
+            </thead>
+            <tbody id="all-unfinished-tbody" class="divide-y divide-slate-200">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- TAB 3: QUẢN TRỊ & MÃ KẾT NỐI GOOGLE SHEETS                          -->
+    <!-- =================================================================== -->
+    <section id="tab-admin" class="tab-content hidden space-y-6">
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 border-t-4 border-t-amber-500 p-4 sm:p-6">
+        <h2 class="text-lg font-extrabold text-slate-900 uppercase">
+          CẤU HÌNH KẾT NỐI TRỰC TIẾP VỚI GOOGLE SHEETS
+        </h2>
+        <p class="text-xs sm:text-sm text-slate-600 mt-1">
+          Dán đường dẫn <strong>Web App URL</strong> từ Google Apps Script của file Google Sheets nhà trường để đồng bộ hai chiều trực tuyến.
+        </p>
+
+        <div class="mt-4 bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">
+              Web App URL (Google Apps Script: https://script.google.com/macros/s/.../exec)
+            </label>
+            <div class="flex flex-col sm:flex-row gap-2">
+              <input type="url" id="input-gas-url" placeholder="https://script.google.com/macros/s/AKfycb.../exec"
+                class="flex-1 bg-white border border-slate-300 rounded-lg px-3.5 py-2.5 text-sm font-mono text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              <button onclick="saveAndTestGasConnection()" class="px-5 py-2.5 rounded-lg bg-[#0d3b8e] hover:bg-[#082c6c] text-white text-sm font-bold shadow-sm transition-colors cursor-pointer shrink-0">
+                Lưu cấu hình & Kiểm tra kết nối
+              </button>
+              <button onclick="syncFromGoogleSheets()" class="px-4 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold shadow-sm transition-colors cursor-pointer shrink-0">
+                Đồng bộ tải dữ liệu từ Google Sheets
+              </button>
+            </div>
+          </div>
+
+          <div class="pt-3 border-t border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h3 class="text-sm font-bold text-slate-800">Khôi phục dữ liệu gốc từ sheet T47</h3>
+              <p class="text-xs text-slate-500">Đặt lại toàn bộ số liệu 21 lớp (840 HS) và danh sách học sinh chưa hoàn thành về đúng nguyên trạng sheet T47.</p>
+            </div>
+            <button onclick="confirmResetData()" class="px-4 py-2 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold transition-colors cursor-pointer shrink-0">
+              Khôi phục dữ liệu gốc
+            </button>
+          </div>
+        </div>
+
+        <!-- Google Apps Script Code Guide -->
+        <div class="mt-6">
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="text-sm font-extrabold text-slate-800 uppercase">
+              Mã nguồn Google Apps Script chuẩn (Khớp 100% cột A–R, dòng 6–26 sheet T47/T48 &amp; sheet "Danh sách HS ")
+            </h3>
+            <button onclick="copyAppsScriptCode()" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold cursor-pointer">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+              </svg>
+              <span>Sao chép mã Code.gs</span>
+            </button>
+          </div>
+          <pre id="gas-code-block" class="bg-slate-900 text-emerald-300 p-4 rounded-xl text-xs font-mono overflow-x-auto leading-relaxed">/**
+ * GOOGLE APPS SCRIPT ĐỒNG BỘ 2 CHIỀU CHO FILE "ĐỀ ÁN 06 (An sinh xã hội)"
+ * Trường THCS&amp;THPT Nà Phặc - Sở GD&amp;ĐT Thái Nguyên
+ * Cấu trúc Sheet tuần (T46, T47, T48...): Dòng 6-16 (THCS 6A..9C), Dòng 18-27 (THPT 10A..12C)
+ * Cột A: Lớp | B: GVCN | C: Tổng HS | D: CCCD Đã | E: CCCD Chưa | F: ĐD2 Đã | G: ĐD2 Chưa
+ * Cột H: SSK Đã | I: SSK Chưa | J: ĐD2 &gt;=14t | K: ASXH THCS Đã tích hợp | L: ASXH THCS Chờ duyệt
+ * Cột M: ASXH THCS Chưa ĐK | N: ASXH THPT Đã ĐK | O: ASXH THPT Chưa ĐK | P: CKS Đã ĐK | Q: CKS Chưa ĐK
+ */
+
+function doGet(e) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const weekSheetName = (e &amp;&amp; e.parameter &amp;&amp; e.parameter.week) ? e.parameter.week : "T47";
+  const sheetTuan = ss.getSheetByName(weekSheetName) || ss.getSheetByName("T47") || ss.getSheets()[0];
+  const sheetDS = ss.getSheetByName("Danh sách HS ") || ss.getSheetByName("Danh sách HS");
+
+  const values = sheetTuan.getRange("A6:Q27").getValues();
+  const classes = [];
+
+  values.forEach(row =&gt; {
+    const cls = String(row[0] || "").trim();
+    if (!cls || cls.toLowerCase().includes("cộng") || cls.toLowerCase().includes("tổng")) return;
+    const isTHPT = /^(10|11|12)/.test(cls);
+    const asxhDone = isTHPT ? (Number(row[13]) || 0) : ((Number(row[10]) || 0) + (Number(row[11]) || 0));
+    const asxhPending = isTHPT ? (Number(row[14]) || 0) : (Number(row[12]) || 0);
+
+    classes.push({
+      id: cls,
+      className: cls,
+      level: isTHPT ? "THPT" : "THCS",
+      gvcn: String(row[1] || "").trim(),
+      total: Number(row[2]) || 0,
+      cccdDone: Number(row[3]) || 0,
+      cccdPending: Number(row[4]) || 0,
+      vneid2Done: Number(row[5]) || 0,
+      vneid2Pending: Number(row[6]) || 0,
+      sskDone: Number(row[7]) || 0,
+      sskPending: Number(row[8]) || 0,
+      asxhApplicable: Number(row[9]) || 0,
+      asxhDone: asxhDone,
+      asxhPending: asxhPending,
+      cksDone: isTHPT ? (Number(row[15]) || 0) : 0,
+      cksPending: isTHPT ? (Number(row[16]) || 0) : 0,
+      week: weekSheetName
+    });
+  });
+
+  const students = [];
+  if (sheetDS) {
+    const dsLastRow = sheetDS.getLastRow();
+    if (dsLastRow &gt;= 5) {
+      const dsValues = sheetDS.getRange(5, 1, dsLastRow - 4, 8).getValues();
+      let autoId = 1;
+      dsValues.forEach(r =&gt; {
+        const name = String(r[1] || "").trim();
+        const cls = String(r[2] || "").trim();
+        if (!name || !cls) return;
+        students.push({
+          id: autoId++,
+          name: name,
+          className: cls,
+          cccd: String(r[3] || "").trim().toUpperCase() === "X",
+          vneid2: String(r[4] || "").trim().toUpperCase() === "X",
+          ssk: String(r[5] || "").trim().toUpperCase() === "X",
+          cks: String(r[6] || "").trim().toUpperCase() === "X",
+          reason: String(r[7] || "").trim()
+        });
+      });
+    }
+  }
+
+  return ContentService.createTextOutput(JSON.stringify({
+    status: "success",
+    week: sheetTuan.getName(),
+    timestamp: new Date().toISOString(),
+    classes: classes,
+    students: students
+  })).setMimeType(ContentService.MimeType.JSON);
+}
+
+function doPost(e) {
+  const lock = LockService.getScriptLock();
+  lock.waitLock(15000);
+  try {
+    const body = JSON.parse(e.postData.contents);
+    const c = body.classData;
+    const ds = body.unfinishedStudents || [];
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+
+    // 1. Cập nhật đúng dòng của lớp trong sheet tuần (T46, T47, T48...)
+    const weekSheetName = c.week || "T47";
+    let sheetTuan = ss.getSheetByName(weekSheetName);
+    if (!sheetTuan) {
+      const template = ss.getSheetByName("T47") || ss.getSheets()[0];
+      sheetTuan = template.copyTo(ss).setName(weekSheetName);
+    }
+
+    const classCol = sheetTuan.getRange("A6:A27").getValues();
+    let targetRow = -1;
+    for (let i = 0; i &lt; classCol.length; i++) {
+      if (String(classCol[i][0]).trim().toUpperCase() === String(c.className).trim().toUpperCase()) {
+        targetRow = i + 6;
+        break;
+      }
+    }
+
+    if (targetRow !== -1) {
+      const isTHPT = c.level === "THPT";
+      // Ghi cột B..I (GVCN, Tổng HS, CCCD, ĐD2, SSK)
+      sheetTuan.getRange(targetRow, 2, 1, 8).setValues([[
+        c.gvcn,
+        Number(c.total) || 0,
+        Number(c.cccdDone) || 0,
+        Number(c.cccdPending) || 0,
+        Number(c.vneid2Done) || 0,
+        Number(c.vneid2Pending) || 0,
+        Number(c.sskDone) || 0,
+        Number(c.sskPending) || 0
+      ]]);
+
+      // Ghi cột J..Q (ĐD2 &gt;=14t, ASXH THCS/THPT, CKS)
+      if (isTHPT) {
+        sheetTuan.getRange(targetRow, 10).setValue(Number(c.vneid2Done) || 0);
+        sheetTuan.getRange(targetRow, 14, 1, 4).setValues([[
+          Number(c.asxhDone) || 0,
+          Number(c.asxhPending) || 0,
+          Number(c.cksDone) || 0,
+          Number(c.cksPending) || 0
+        ]]);
+      } else {
+        sheetTuan.getRange(targetRow, 10, 1, 4).setValues([[
+          Number(c.asxhApplicable) || 0,
+          0,
+          Number(c.asxhDone) || 0,
+          Number(c.asxhPending) || 0
+        ]]);
+      }
+      sheetTuan.getRange(targetRow, 18).setValue("Đã nộp " + weekSheetName + " (" + (c.updatedAt || "") + ")");
+    }
+
+    // 2. Đồng bộ danh sách học sinh chưa hoàn thành của lớp vào sheet "Danh sách HS "
+    const sheetDS = ss.getSheetByName("Danh sách HS ") || ss.getSheetByName("Danh sách HS");
+    if (sheetDS) {
+      const lastRow = sheetDS.getLastRow();
+      const keptRows = [];
+      if (lastRow &gt;= 5) {
+        const allRows = sheetDS.getRange(5, 1, lastRow - 4, 8).getValues();
+        allRows.forEach(r =&gt; {
+          const rowClass = String(r[2] || "").trim().toUpperCase();
+          const rowName = String(r[1] || "").trim();
+          if (rowName &amp;&amp; rowClass !== String(c.className).trim().toUpperCase()) {
+            keptRows.push(r);
+          }
+        });
+      }
+
+      ds.forEach(st =&gt; {
+        keptRows.push([
+          0,
+          st.name,
+          c.className,
+          st.cccd ? "X" : "",
+          st.vneid2 ? "X" : "",
+          st.ssk ? "X" : "",
+          st.cks ? "X" : "",
+          st.reason || ""
+        ]);
+      });
+
+      if (lastRow &gt;= 5) {
+        sheetDS.getRange(5, 1, lastRow - 4, 8).clearContent();
+      }
+      if (keptRows.length &gt; 0) {
+        const numbered = keptRows.map((r, idx) =&gt; [idx + 1, r[1], r[2], r[3], r[4], r[5], r[6], r[7]]);
+        sheetDS.getRange(5, 1, numbered.length, 8).setValues(numbered);
+      }
+    }
+
+    return ContentService.createTextOutput(JSON.stringify({ status: "success", className: c.className }))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({ status: "error", message: err.toString() }))
+      .setMimeType(ContentService.MimeType.JSON);
+  } finally {
+    lock.releaseLock();
+  }
+}</pre>
+          <div class="mt-3 bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs text-slate-700 space-y-1">
+            <p class="font-bold text-[#0d3b8e]">Hướng dẫn triển khai 3 bước trên file Google Sheets của trường:</p>
+            <p>1. Mở file Google Sheets <strong>ĐỀ ÁN 06 (An sinh xã hội)</strong> &rarr; chọn <strong>Tiện ích mở rộng (Extensions)</strong> &rarr; <strong>Apps Script</strong>.</p>
+            <p>2. Xóa mã mặc định, dán toàn bộ đoạn mã trên vào và nhấn <strong>Lưu (Ctrl + S)</strong>.</p>
+            <p>3. Chọn <strong>Triển khai (Deploy)</strong> &rarr; <strong>Tùy chọn triển khai mới (New deployment)</strong> &rarr; Loại: <strong>Ứng dụng web (Web app)</strong> &rarr; Quyền truy cập: <strong>Bất kỳ ai (Anyone)</strong> &rarr; Sao chép URL dán vào ô phía trên.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Modal: Add Unfinished Student -->
+  <div id="add-student-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-xl border border-slate-200 max-w-md w-full p-5">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-200">
+        <h3 class="text-base font-extrabold text-slate-900">Thêm học sinh chưa hoàn thành</h3>
+        <button onclick="closeAddStudentModal()" class="text-slate-400 hover:text-slate-700 p-1 cursor-pointer">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+      <div class="mt-4 space-y-3.5">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Họ và tên học sinh <span class="text-red-500">*</span></label>
+          <input type="text" id="modal-student-name" placeholder="Ví dụ: Nguyễn Văn A" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">Nội dung chưa hoàn thành</label>
+          <div class="grid grid-cols-2 gap-2 text-xs font-semibold">
+            <label class="flex items-center gap-2 p-2 rounded-lg border border-slate-200 bg-slate-50 cursor-pointer">
+              <input type="checkbox" id="modal-chk-cccd" class="rounded text-blue-600" />
+              <span>Thiếu CCCD</span>
+            </label>
+            <label class="flex items-center gap-2 p-2 rounded-lg border border-slate-200 bg-slate-50 cursor-pointer">
+              <input type="checkbox" id="modal-chk-vneid2" class="rounded text-blue-600" />
+              <span>Chưa ĐD mức 2</span>
+            </label>
+            <label class="flex items-center gap-2 p-2 rounded-lg border border-slate-200 bg-slate-50 cursor-pointer">
+              <input type="checkbox" id="modal-chk-ssk" checked class="rounded text-blue-600" />
+              <span>Chưa SSKĐT</span>
+            </label>
+            <label class="flex items-center gap-2 p-2 rounded-lg border border-slate-200 bg-slate-50 cursor-pointer">
+              <input type="checkbox" id="modal-chk-cks" class="rounded text-blue-600" />
+              <span>Chưa Chữ ký số</span>
+            </label>
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Ghi rõ lý do chưa hoàn thành <span class="text-red-500">*</span></label>
+          <input type="text" id="modal-student-reason" placeholder="Ví dụ: Không có điện thoại, quên mật khẩu..." class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        </div>
+      </div>
+      <div class="mt-5 pt-3 border-t border-slate-200 flex justify-end gap-2">
+        <button onclick="closeAddStudentModal()" class="px-4 py-2 rounded-lg border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-50 cursor-pointer">Hủy</button>
+        <button onclick="confirmAddStudent()" class="px-4 py-2 rounded-lg bg-[#0b4a99] hover:bg-[#083878] text-white text-xs font-bold cursor-pointer">Thêm vào danh sách</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-white border-t border-slate-200 py-3 px-4 text-center text-xs text-slate-500 mt-8">
+    Trường THCS&THPT Nà Phặc • Sở Giáo dục và Đào tạo Tỉnh Thái Nguyên • Hệ thống Quản lý Số liệu Đề án 06
+  </footer>
+
+  <script>
+    // =========================================================================
+    // 1. DỮ LIỆU GỐC MỚI NHẤT TỪ SHEET T47 GOOGLE SHEETS (840 HS: THCS 410, THPT 430)
+    // =========================================================================
+    const INITIAL_CLASSES = [
+      // Cấp THCS (11 lớp - 410 HS)
+      { id: "6A", className: "6A", level: "THCS", gvcn: "Nguyễn Thị Cúc", phone: "", week: "T47", total: 35, cccdDone: 35, cccdPending: 0, vneid2Done: 35, vneid2Pending: 0, sskDone: 33, sskPending: 2, asxhApplicable: 0, asxhDone: 0, asxhPending: 0, cksDone: 0, cksPending: 0, updatedAt: "Sheet T47" },
+      { id: "6B", className: "6B", level: "THCS", gvcn: "Hoàng Thị Hà Lan", phone: "", week: "T47", total: 36, cccdDone: 36, cccdPending: 0, vneid2Done: 36, vneid2Pending: 0, sskDone: 36, sskPending: 0, asxhApplicable: 0, asxhDone: 0, asxhPending: 0, cksDone: 0, cksPending: 0, updatedAt: "Sheet T47" },
+      { id: "6C", className: "6C", level: "THCS", gvcn: "Hứa Thu Uyên", phone: "", week: "T47", total: 34, cccdDone: 34, cccdPending: 0, vneid2Done: 34, vneid2Pending: 0, sskDone: 28, sskPending: 6, asxhApplicable: 0, asxhDone: 0, asxhPending: 0, cksDone: 0, cksPending: 0, updatedAt: "Sheet T47" },
+      { id: "7A", className: "7A", level: "THCS", gvcn: "Chu Huyền Trang", phone: "", week: "T47", total: 44, cccdDone: 44, cccdPending: 0, vneid2Done: 43, vneid2Pending: 1, sskDone: 42, sskPending: 1, asxhApplicable: 0, asxhDone: 0, asxhPending: 0, cksDone: 0, cksPending: 0, updatedAt: "Sheet T47" },
+      { id: "7B", className: "7B", level: "THCS", gvcn: "Hoàng Văn Vĩnh", phone: "", week: "T47", total: 43, cccdDone: 43, cccdPending: 0, vneid2Done: 41, vneid2Pending: 2, sskDone: 38, sskPending: 3, asxhApplicable: 2, asxhDone: 1, asxhPending: 1, cksDone: 0, cksPending: 0, updatedAt: "Sheet T47" },
+      { id: "8A", className: "8A", level: "THCS", gvcn: "Ma Thị Hành", phone: "", week: "T47", total: 35, cccdDone: 35, cccdPending: 0, vneid2Done: 35, vneid2Pending: 0, sskDone: 33, sskPending: 2, asxhApplicable: 2, asxhDone: 1, asxhPending: 1, cksDone: 0, cksPending: 0, updatedAt: "Sheet T47" },
+      { id: "8B", className: "8B", level: "THCS", gvcn: "Mông Văn Trình", phone: "", week: "T47", total: 36, cccdDone: 36, cccdPending: 0, vneid2Done: 36, vneid2Pending: 0, sskDone: 32, sskPending: 4, asxhApplicable: 3, asxhDone: 0, asxhPending: 3, cksDone: 0, cksPending: 0, updatedAt: "Sheet T47" },
+      { id: "8C", className: "8C", level: "THCS", gvcn: "Hoàng Thị Chuyên", phone: "", week: "T47", total: 37, cccdDone: 37, cccdPending: 0, vneid2Done: 36, vneid2Pending: 1, sskDone: 34, sskPending: 2, asxhApplicable: 3, asxhDone: 0, asxhPending: 3, cksDone: 0, cksPending: 0, updatedAt: "Sheet T47" },
+      { id: "9A", className: "9A", level: "THCS", gvcn: "Nguyễn Thị Vân", phone: "", week: "T47", total: 35, cccdDone: 35, cccdPending: 0, vneid2Done: 35, vneid2Pending: 0, sskDone: 35, sskPending: 0, asxhApplicable: 33, asxhDone: 0, asxhPending: 33, cksDone: 0, cksPending: 0, updatedAt: "Sheet T47" },
+      { id: "9B", className: "9B", level: "THCS", gvcn: "Ma Thị Thúy", phone: "", week: "T47", total: 37, cccdDone: 37, cccdPending: 0, vneid2Done: 36, vneid2Pending: 1, sskDone: 27, sskPending: 10, asxhApplicable: 34, asxhDone: 0, asxhPending: 34, cksDone: 0, cksPending: 0, updatedAt: "Sheet T47" },
+      { id: "9C", className: "9C", level: "THCS", gvcn: "Nguyễn Thị Thư", phone: "", week: "T47", total: 38, cccdDone: 38, cccdPending: 0, vneid2Done: 38, vneid2Pending: 0, sskDone: 38, sskPending: 0, asxhApplicable: 30, asxhDone: 0, asxhPending: 30, cksDone: 0, cksPending: 0, updatedAt: "Sheet T47" },
+
+      // Cấp THPT (10 lớp - 430 HS)
+      { id: "10A", className: "10A", level: "THPT", gvcn: "Hoàng Thị Mai", phone: "", week: "T47", total: 45, cccdDone: 45, cccdPending: 0, vneid2Done: 45, vneid2Pending: 0, sskDone: 45, sskPending: 0, asxhApplicable: 45, asxhDone: 20, asxhPending: 25, cksDone: 45, cksPending: 0, updatedAt: "Sheet T47" },
+      { id: "10B", className: "10B", level: "THPT", gvcn: "Chu Thị Hội", phone: "", week: "T47", total: 44, cccdDone: 44, cccdPending: 0, vneid2Done: 44, vneid2Pending: 0, sskDone: 44, sskPending: 0, asxhApplicable: 44, asxhDone: 27, asxhPending: 17, cksDone: 44, cksPending: 0, updatedAt: "Sheet T47" },
+      { id: "10C", className: "10C", level: "THPT", gvcn: "Khổng Thị Chi", phone: "", week: "T47", total: 44, cccdDone: 44, cccdPending: 0, vneid2Done: 44, vneid2Pending: 0, sskDone: 44, sskPending: 0, asxhApplicable: 44, asxhDone: 34, asxhPending: 10, cksDone: 44, cksPending: 0, updatedAt: "Sheet T47" },
+      { id: "10D", className: "10D", level: "THPT", gvcn: "Đàm Danh Công", phone: "", week: "T47", total: 45, cccdDone: 45, cccdPending: 0, vneid2Done: 45, vneid2Pending: 0, sskDone: 45, sskPending: 0, asxhApplicable: 45, asxhDone: 45, asxhPending: 0, cksDone: 45, cksPending: 0, updatedAt: "Sheet T47" },
+      { id: "11A", className: "11A", level: "THPT", gvcn: "Ma Thị Yến", phone: "", week: "T47", total: 44, cccdDone: 44, cccdPending: 0, vneid2Done: 43, vneid2Pending: 1, sskDone: 42, sskPending: 1, asxhApplicable: 43, asxhDone: 27, asxhPending: 16, cksDone: 43, cksPending: 0, updatedAt: "Sheet T47" },
+      { id: "11B", className: "11B", level: "THPT", gvcn: "Lý Thị Gấm", phone: "", week: "T47", total: 43, cccdDone: 43, cccdPending: 0, vneid2Done: 42, vneid2Pending: 1, sskDone: 40, sskPending: 2, asxhApplicable: 42, asxhDone: 40, asxhPending: 1, cksDone: 41, cksPending: 1, updatedAt: "Sheet T47" },
+      { id: "11C", className: "11C", level: "THPT", gvcn: "Ôn Thị Nhoi", phone: "", week: "T47", total: 44, cccdDone: 44, cccdPending: 0, vneid2Done: 44, vneid2Pending: 0, sskDone: 44, sskPending: 0, asxhApplicable: 44, asxhDone: 43, asxhPending: 1, cksDone: 44, cksPending: 0, updatedAt: "Sheet T47" },
+      { id: "12A", className: "12A", level: "THPT", gvcn: "Hoàng Tuấn Anh", phone: "", week: "T47", total: 37, cccdDone: 37, cccdPending: 0, vneid2Done: 37, vneid2Pending: 0, sskDone: 37, sskPending: 0, asxhApplicable: 37, asxhDone: 35, asxhPending: 2, cksDone: 37, cksPending: 0, updatedAt: "Sheet T47" },
+      { id: "12B", className: "12B", level: "THPT", gvcn: "Nguyễn Thu Thư", phone: "", week: "T47", total: 45, cccdDone: 45, cccdPending: 0, vneid2Done: 45, vneid2Pending: 0, sskDone: 45, sskPending: 0, asxhApplicable: 45, asxhDone: 44, asxhPending: 1, cksDone: 45, cksPending: 0, updatedAt: "Sheet T47" },
+      { id: "12C", className: "12C", level: "THPT", gvcn: "Ma Thị Huệ", phone: "", week: "T47", total: 39, cccdDone: 39, cccdPending: 0, vneid2Done: 39, vneid2Pending: 0, sskDone: 39, sskPending: 0, asxhApplicable: 39, asxhDone: 39, asxhPending: 0, cksDone: 39, cksPending: 0, updatedAt: "Sheet T47" }
+    ];
+
+    // Danh sách 81 học sinh chưa hoàn thành trích xuất đầy đủ từ sheet "Danh sách HS"
+    const INITIAL_STUDENTS = [
+      { id: 1, name: "Lý Hoàng Bảo An", className: "6A", cccd: false, vneid2: false, ssk: true, cks: false, reason: "Không có điện thoại" },
+      { id: 2, name: "Nông Đức Anh", className: "6A", cccd: false, vneid2: false, ssk: true, cks: false, reason: "Mẹ không có điện thoại" },
+      { id: 3, name: "Đặng Hữu Phú", className: "6A", cccd: false, vneid2: false, ssk: true, cks: false, reason: "Bố mẹ đi làm xa" },
+      { id: 4, name: "Hoàng Gia Huy", className: "6A", cccd: false, vneid2: false, ssk: true, cks: false, reason: "Quên mật khẩu VNeID" },
+      { id: 5, name: "Triệu Thu Hiền", className: "6A", cccd: false, vneid2: false, ssk: true, cks: false, reason: "Không có điện thoại" },
+      { id: 6, name: "Đặng Minh Đức", className: "6C", cccd: false, vneid2: false, ssk: true, cks: false, reason: "Mẹ không có điện thoại" },
+      { id: 7, name: "Hoàng Văn Hưng", className: "6C", cccd: false, vneid2: false, ssk: true, cks: false, reason: "Bố mẹ không có điện thoại" },
+      { id: 8, name: "Nông Minh Khôi", className: "6C", cccd: false, vneid2: false, ssk: true, cks: false, reason: "Mẹ chưa tích hợp được BHYT trên VNeID" },
+      { id: 9, name: "Dương Tiến Đạt", className: "6C", cccd: false, vneid2: false, ssk: true, cks: false, reason: "SĐT đăng ký chưa chính chủ, bố mẹ ở xa" },
+      { id: 10, name: "Trần Thị Minh Thư", className: "6C", cccd: false, vneid2: false, ssk: true, cks: false, reason: "SĐT đăng ký chưa chính chủ" },
+      { id: 11, name: "Bế Thảo Vy", className: "6C", cccd: false, vneid2: false, ssk: true, cks: false, reason: "Quên mật khẩu VNeID" },
+      { id: 12, name: "Đặng Quốc Đại", className: "7A", cccd: false, vneid2: true, ssk: false, cks: false, reason: "Lịch hẹn làm định danh mức 2 bị chậm" },
+      { id: 13, name: "Bàn Chí Vỹ", className: "7A", cccd: false, vneid2: false, ssk: true, cks: false, reason: "Không có BHYT trên VNeID" },
+      { id: 14, name: "Trần Thanh Hiền", className: "7B", cccd: false, vneid2: true, ssk: false, cks: false, reason: "Bố mẹ đi làm xa" },
+      { id: 15, name: "Phùng Thanh Hương", className: "7B", cccd: false, vneid2: true, ssk: false, cks: false, reason: "Bố mẹ đi làm xa" },
+      { id: 16, name: "Nông Phương Thảo", className: "7B", cccd: false, vneid2: true, ssk: false, cks: false, reason: "Không có mặt tại địa phương" },
+      { id: 17, name: "Đàm Phương Anh", className: "7B", cccd: false, vneid2: true, ssk: false, cks: false, reason: "Bố mẹ đi làm xa" },
+      { id: 18, name: "Nông Minh Chiến", className: "7B", cccd: false, vneid2: true, ssk: false, cks: false, reason: "Bố mẹ đi làm xa" },
+      { id: 19, name: "Dương Triệu Duy", className: "7B", cccd: false, vneid2: true, ssk: false, cks: false, reason: "Bố mẹ đi làm xa" },
+      { id: 20, name: "Lý Gia Hưng", className: "7B", cccd: false, vneid2: true, ssk: false, cks: false, reason: "Bố mẹ đi làm xa" },
+      { id: 21, name: "Nông Nhật Minh", className: "7B", cccd: false, vneid2: false, ssk: true, cks: false, reason: "Không có điện thoại" },
+      { id: 22, name: "Đặng Như Nguyệt", className: "7B", cccd: false, vneid2: false, ssk: true, cks: false, reason: "Không có điện thoại" },
+      { id: 23, name: "Bàn Văn Quyến", className: "7B", cccd: false, vneid2: false, ssk: true, cks: false, reason: "Không có điện thoại" },
+      { id: 24, name: "Hoàng Thiên Vũ", className: "7B", cccd: false, vneid2: false, ssk: true, cks: false, reason: "Không có điện thoại" },
+      { id: 25, name: "Bế Văn Cường", className: "7B", cccd: false, vneid2: false, ssk: true, cks: false, reason: "Không có điện thoại" },
+      { id: 26, name: "Hoàng Hải Đăng", className: "7B", cccd: false, vneid2: false, ssk: true, cks: false, reason: "Không có điện thoại" },
+      { id: 27, name: "Lô Huy Hoàng", className: "7B", cccd: false, vneid2: false, ssk: true, cks: false, reason: "Không có điện thoại" },
+      { id: 28, name: "Trần Nguyễn Minh Khôi", className: "7B", cccd: false, vneid2: false, ssk: true, cks: false, reason: "Không có điện thoại" },
+      { id: 29, name: "Dương Đức Lợi", className: "7B", cccd: false, vneid2: false, ssk: true, cks: false, reason: "Không có điện thoại" },
+      { id: 30, name: "Trịnh Phương Mai", className: "8A", cccd: false, vneid2: false, ssk: true, cks: false, reason: "Không có điện thoại" },
+      { id: 31, name: "Nông Bảo Nam", className: "8A", cccd: false, vneid2: false, ssk: true, cks: false, reason: "Không có điện thoại" },
+      { id: 32, name: "Lê Minh Quân", className: "8A", cccd: false, vneid2: false, ssk: true, cks: false, reason: "Không có điện thoại" },
+      { id: 33, name: "Nguyễn Ngọc Anh Thư", className: "8A", cccd: false, vneid2: false, ssk: true, cks: false, reason: "Không có điện thoại" },
+      { id: 34, name: "Phùng Ngọc Anh Thư", className: "8B", cccd: false, vneid2: false, ssk: true, cks: false, reason: "Không có điện thoại" },
+      { id: 35, name: "Lương Văn Vũ", className: "8B", cccd: false, vneid2: false, ssk: true, cks: false, reason: "Không có điện thoại" },
+      { id: 36, name: "Nông Thị Thảo Nguyên", className: "8B", cccd: false, vneid2: false, ssk: true, cks: false, reason: "Không có điện thoại" },
+      { id: 37, name: "Nông Thùy Dương", className: "8B", cccd: false, vneid2: false, ssk: true, cks: false, reason: "Không có điện thoại" },
+      { id: 38, name: "Lý Thu Thảo", className: "8C", cccd: false, vneid2: true, ssk: false, cks: false, reason: "Bố mẹ đi làm xa" },
+      { id: 39, name: "Đặng Minh Hiếu", className: "8C", cccd: false, vneid2: false, ssk: true, cks: false, reason: "Không có điện thoại" },
+      { id: 40, name: "Hoàng Nguyễn Huyền Trang", className: "8C", cccd: false, vneid2: false, ssk: true, cks: false, reason: "Không có điện thoại" },
+      { id: 41, name: "Phùng Văn Thắng", className: "8C", cccd: false, vneid2: false, ssk: true, cks: false, reason: "Không có điện thoại" },
+      { id: 42, name: "Bàn Anh Tuấn", className: "8C", cccd: false, vneid2: false, ssk: true, cks: false, reason: "Không có điện thoại" },
+      { id: 43, name: "Đặng Thị Hoàng Yến", className: "9B", cccd: false, vneid2: true, ssk: false, cks: false, reason: "Đang làm lại giấy khai sinh để tích hợp với CCCD" },
+      { id: 44, name: "Bế Văn Nam", className: "9B", cccd: false, vneid2: true, ssk: false, cks: false, reason: "Bố mẹ đi làm xa" },
+      { id: 45, name: "Lương Đình Chiến", className: "9B", cccd: false, vneid2: false, ssk: true, cks: false, reason: "Không có điện thoại" },
+      { id: 46, name: "Trịnh Xuân Đức", className: "9B", cccd: false, vneid2: false, ssk: true, cks: false, reason: "Không có điện thoại" },
+      { id: 47, name: "Đinh Quỳnh Giao", className: "9B", cccd: false, vneid2: false, ssk: true, cks: false, reason: "Không có điện thoại" },
+      { id: 48, name: "Triệu Gia Huy", className: "9B", cccd: false, vneid2: false, ssk: true, cks: false, reason: "Không có điện thoại" },
+      { id: 49, name: "Lý Gia Huy", className: "9B", cccd: false, vneid2: false, ssk: true, cks: false, reason: "Không có điện thoại" },
+      { id: 50, name: "Lương Thị Mai Hương", className: "9B", cccd: false, vneid2: false, ssk: true, cks: false, reason: "Không có điện thoại" },
+      { id: 51, name: "Lê Minh Hoàng", className: "9B", cccd: false, vneid2: false, ssk: true, cks: false, reason: "Không có điện thoại" },
+      { id: 52, name: "Ma Anh Tuấn", className: "9B", cccd: false, vneid2: false, ssk: true, cks: false, reason: "Không có điện thoại" },
+      { id: 53, name: "Hoàng Văn Thành", className: "10D", cccd: false, vneid2: false, ssk: false, cks: true, reason: "Điện thoại cấu hình thấp, lỗi xác thực chữ ký số" },
+      { id: 54, name: "Dương Triệu Vũ", className: "11A", cccd: false, vneid2: true, ssk: true, cks: false, reason: "Chưa đến tuổi làm định danh mức 2 (12/12/2010)" },
+      { id: 55, name: "Lương Thanh Xuân", className: "11B", cccd: false, vneid2: true, ssk: true, cks: true, reason: "Không đăng nhập được trên VNeID do thay đổi SĐT" },
+      { id: 56, name: "Nông Hoàng Mạnh", className: "11B", cccd: false, vneid2: false, ssk: true, cks: false, reason: "Chưa tích hợp được BHYT trên VNeID" }
+    ];
+
+    // =========================================================================
+    // 2. QUẢN LÝ TRẠNG THÁI & LOCALSTORAGE
+    // =========================================================================
+    const STORAGE_KEY_CLASSES = "na_phac_da06_classes_t47_v1";
+    const STORAGE_KEY_STUDENTS = "na_phac_da06_students_t47_v1";
+    const STORAGE_KEY_GAS_URL = "na_phac_da06_gas_url_t47_v1";
+    const STORAGE_KEY_WEEK = "na_phac_da06_selected_week_v1";
+
+    let classesData = [];
+    let studentsData = [];
+    let currentClassId = "6A";
+    let selectedWeek = "T47";
+      try {
+        const savedClasses = localStorage.getItem(STORAGE_KEY_CLASSES);
+        const savedStudents = localStorage.getItem(STORAGE_KEY_STUDENTS);
+        classesData = savedClasses ? JSON.parse(savedClasses) : JSON.parse(JSON.stringify(INITIAL_CLASSES));
+        studentsData = savedStudents ? JSON.parse(savedStudents) : JSON.parse(JSON.stringify(INITIAL_STUDENTS));
+      } catch (e) {
+        classesData = JSON.parse(JSON.stringify(INITIAL_CLASSES));
+        studentsData = JSON.parse(JSON.stringify(INITIAL_STUDENTS));
+      }
+
+      const savedGasUrl = localStorage.getItem(STORAGE_KEY_GAS_URL) || "";
+      document.getElementById("input-gas-url").value = savedGasUrl;
+      updateConnectionBadge(savedGasUrl);
+
+      selectedWeek = localStorage.getItem(STORAGE_KEY_WEEK) || "T47";
+      const weekEl = document.getElementById("input-week");
+      if (weekEl) weekEl.value = selectedWeek;
+    }
+
+    function saveAppState() {
+      localStorage.setItem(STORAGE_KEY_CLASSES, JSON.stringify(classesData));
+      localStorage.setItem(STORAGE_KEY_STUDENTS, JSON.stringify(studentsData));
+    }
+
+    function updateConnectionBadge(url) {
+      const badge = document.getElementById("connection-badge");
+      const text = document.getElementById("connection-badge-text");
+      if (url && url.startsWith("https://script.google.com/")) {
+        badge.className = "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500 text-white shadow-sm";
+        text.textContent = "Đã kết nối Google Sheets Online";
+      } else {
+        badge.className = "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/90 text-white shadow-sm";
+        text.textContent = "Sẵn sàng đồng bộ Google Sheets";
+      }
+    }
+
+    // =========================================================================
+    // 3. THÔNG BÁO TOAST (KHÔNG DÙNG ALERT)
+    // =========================================================================
+    function showToast(message, type = "success") {
+      const container = document.getElementById("toast-container");
+      const toast = document.createElement("div");
+      const bgColors = {
+        success: "bg-emerald-600 text-white border-emerald-700",
+        error: "bg-rose-600 text-white border-rose-700",
+        info: "bg-[#0b4a99] text-white border-blue-800"
+      };
+      toast.className = `${bgColors[type] || bgColors.info} pointer-events-auto px-4 py-3 rounded-xl shadow-lg border text-xs sm:text-sm font-semibold flex items-center justify-between gap-3 transition-all`;
+      toast.innerHTML = `<span>${message}</span>`;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = "0";
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    // =========================================================================
+    // 4. ĐIỀU HƯỚNG TAB
+    // =========================================================================
+    function switchTab(tabId) {
+      document.querySelectorAll(".tab-content").forEach(el => el.classList.add("hidden"));
+      document.getElementById(tabId).classList.remove("hidden");
+
+      const btnInput = document.getElementById("btn-tab-input");
+      const btnSummary = document.getElementById("btn-tab-summary");
+      const btnAdmin = document.getElementById("btn-tab-admin");
+
+      btnInput.className = "tab-btn flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs sm:text-sm font-bold bg-blue-900/70 text-blue-100 hover:bg-blue-800 transition-all cursor-pointer";
+      btnSummary.className = "tab-btn flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs sm:text-sm font-bold bg-blue-900/70 text-blue-100 hover:bg-blue-800 transition-all cursor-pointer";
+      btnAdmin.className = "tab-btn flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs sm:text-sm font-bold bg-amber-500 text-slate-900 hover:bg-amber-400 shadow-sm transition-all cursor-pointer";
+
+      if (tabId === "tab-input") {
+        btnInput.className = "tab-btn flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs sm:text-sm font-bold bg-white text-[#0d3b8e] shadow-sm transition-all cursor-pointer";
+        renderClassForm();
+      } else if (tabId === "tab-summary") {
+        btnSummary.className = "tab-btn flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs sm:text-sm font-bold bg-white text-[#0d3b8e] shadow-sm transition-all cursor-pointer";
+        renderSummaryTab();
+      } else if (tabId === "tab-admin") {
+        btnAdmin.className = "tab-btn flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs sm:text-sm font-bold bg-white text-amber-700 shadow-sm transition-all cursor-pointer";
+      }
+    }
+
+    // =========================================================================
+    // 5. TAB 1: BỘ LỌC & BẢNG NHẬP LIỆU CỦA LỚP
+    // =========================================================================
+    function populateClassSelect() {
+      const level = document.getElementById("filter-level").value;
+      const select = document.getElementById("filter-class");
+      const filtered = level === "ALL" ? classesData : classesData.filter(c => c.level === level);
+
+      select.innerHTML = filtered.map(c =>
+        `<option value="${c.id}">Lớp ${c.className} - GVCN: ${c.gvcn} (${c.total} HS)</option>`
+      ).join("");
+
+      if (filtered.length > 0) {
+        if (!filtered.some(c => c.id === currentClassId)) {
+          currentClassId = filtered[0].id;
+        }
+        select.value = currentClassId;
+      }
+    }
+
+    function handleLevelChange() {
+      populateClassSelect();
+      renderClassForm();
+    }
+
+    function handleWeekChange() {
+      selectedWeek = document.getElementById("input-week").value;
+      localStorage.setItem(STORAGE_KEY_WEEK, selectedWeek);
+      classesData.forEach(c => { c.week = selectedWeek; });
+      saveAppState();
+      renderClassForm();
+      const summaryLabel = document.getElementById("summary-week-label");
+      if (summaryLabel) summaryLabel.textContent = selectedWeek.replace("T", "TUẦN ");
+    }
+
+    function handleClassChange() {
+      currentClassId = document.getElementById("filter-class").value;
+      renderClassForm();
+    }
+
+    function getCurrentClass() {
+      return classesData.find(c => c.id === currentClassId) || classesData[0];
+    }
+
+    function calcPercent(done, total) {
+      if (!total || total <= 0) return "0.0%";
+      return ((done / total) * 100).toFixed(1) + "%";
+    }
+
+    function renderClassForm() {
+      const cls = getCurrentClass();
+      if (!cls) return;
+
+      document.getElementById("display-class-meta").textContent = `${cls.level} • Sĩ số: ${cls.total} HS`;
+      document.getElementById("input-reporter").value = cls.gvcn || "";
+      document.getElementById("input-phone").value = cls.phone || "";
+      document.getElementById("input-week").value = selectedWeek;
+      document.getElementById("sec1-class-title").textContent = `LỚP ${cls.className} - GVCN: ${cls.gvcn}`;
+      document.getElementById("sec2-class-title").textContent = `LỚP ${cls.className}`;
+      document.getElementById("class-status-text").innerHTML = `
+        <svg class="w-4 h-4 shrink-0 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+        </svg>
+        <span>Đã cập nhật (${cls.updatedAt || "Sheet T47"}) - GVCN: ${cls.gvcn}</span>
+      `;
+
+      const tbody = document.getElementById("class-metrics-tbody");
+      const isTHPT = cls.level === "THPT";
+
+      const rows = [
+        {
+          stt: 1,
+          label: "Căn cước công dân (CCCD)",
+          target: `${cls.total} HS toàn lớp`,
+          doneField: "cccdDone",
+          pendingField: "cccdPending",
+          doneVal: cls.cccdDone,
+          pendingVal: cls.cccdPending,
+          disabled: false
+        },
+        {
+          stt: 2,
+          label: "Kích hoạt định danh điện tử mức 2 trên VNeID",
+          target: `${cls.total} HS toàn lớp`,
+          doneField: "vneid2Done",
+          pendingField: "vneid2Pending",
+          doneVal: cls.vneid2Done,
+          pendingVal: cls.vneid2Pending,
+          disabled: false
+        },
+        {
+          stt: 3,
+          label: "Tích hợp Sổ sức khỏe điện tử trên VNeID",
+          target: `${cls.vneid2Done} HS đã ĐD mức 2`,
+          doneField: "sskDone",
+          pendingField: "sskPending",
+          doneVal: cls.sskDone,
+          pendingVal: cls.sskPending,
+          disabled: false
+        },
+        {
+          stt: 4,
+          label: "Tích hợp tài khoản hưởng An sinh xã hội trên VNeID (tính trên HS từ 14 tuổi trở lên đã ĐD mức 2)",
+          target: cls.asxhApplicable > 0 ? `${cls.asxhApplicable} HS đủ 14 tuổi` : "Chưa đủ 14 tuổi",
+          doneField: "asxhDone",
+          pendingField: "asxhPending",
+          doneVal: cls.asxhDone,
+          pendingVal: cls.asxhPending,
+          disabled: cls.asxhApplicable === 0 && cls.level === "THCS"
+        },
+        {
+          stt: 5,
+          label: "Đăng ký chữ ký số công cộng trên VNeID (Chỉ áp dụng cấp THPT)",
+          target: isTHPT ? `${cls.vneid2Done} HS THPT` : "Không áp dụng",
+          doneField: "cksDone",
+          pendingField: "cksPending",
+          doneVal: cls.cksDone,
+          pendingVal: cls.cksPending,
+          disabled: !isTHPT
+        }
+      ];
+
+      tbody.innerHTML = rows.map(r => {
+        const sum = (Number(r.doneVal) || 0) + (Number(r.pendingVal) || 0);
+        const pct = r.disabled ? "—" : calcPercent(r.doneVal, sum);
+        if (r.disabled) {
+          return `
+            <tr class="bg-slate-50/80 text-slate-400">
+              <td class="py-3 px-3 text-center font-semibold border-r border-slate-200">${r.stt}</td>
+              <td class="py-3 px-3 font-medium border-r border-slate-200">${r.label}</td>
+              <td class="py-3 px-3 text-center text-xs font-semibold border-r border-slate-200">${r.target}</td>
+              <td class="py-3 px-3 text-center border-r border-slate-200">—</td>
+              <td class="py-3 px-3 text-center border-r border-slate-200">—</td>
+              <td class="py-3 px-3 text-center font-semibold border-r border-slate-200">0</td>
+              <td class="py-3 px-3 text-center font-semibold">—</td>
+            </tr>
+          `;
+        }
+        return `
+          <tr class="hover:bg-blue-50/30 transition-colors">
+            <td class="py-3 px-3 text-center font-semibold text-slate-600 border-r border-slate-200">${r.stt}</td>
+            <td class="py-3 px-3 font-semibold text-slate-800 border-r border-slate-200">${r.label}</td>
+            <td class="py-3 px-3 text-center text-xs text-slate-600 border-r border-slate-200">${r.target}</td>
+            <td class="py-2.5 px-3 text-center border-r border-slate-200 bg-emerald-50/40">
+              <input type="number" min="0" max="60" value="${r.doneVal}"
+                onchange="updateMetricValue('${r.doneField}', this.value)"
+                class="w-24 text-center font-bold text-emerald-800 bg-white border border-emerald-300 rounded-md py-1.5 px-2 focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+            </td>
+            <td class="py-2.5 px-3 text-center border-r border-slate-200 bg-rose-50/40">
+              <input type="number" min="0" max="60" value="${r.pendingVal}"
+                onchange="updateMetricValue('${r.pendingField}', this.value)"
+                class="w-24 text-center font-bold text-rose-700 bg-white border border-rose-300 rounded-md py-1.5 px-2 focus:outline-none focus:ring-2 focus:ring-rose-500" />
+            </td>
+            <td class="py-3 px-3 text-center font-extrabold text-[#0d3b8e] border-r border-slate-200">${sum}</td>
+            <td class="py-3 px-3 text-center font-bold text-slate-800">${pct}</td>
+          </tr>
+        `;
+      }).join("");
+
+      renderClassStudentsTable();
+    }
+
+    function updateMetricValue(field, val) {
+      const cls = getCurrentClass();
+      if (!cls) return;
+      const num = Math.max(0, parseInt(val, 10) || 0);
+      cls[field] = num;
+      saveAppState();
+      renderClassForm();
+    }
+
+    // =========================================================================
+    // 6. DANH SÁCH HỌC SINH CHƯA HOÀN THÀNH CỦA LỚP ĐANG CHỌN
+    // =========================================================================
+    function renderClassStudentsTable() {
+      const cls = getCurrentClass();
+      const list = studentsData.filter(s => s.className === cls.className);
+      document.getElementById("sec2-count-badge").textContent = `${list.length} học sinh`;
+
+      const tbody = document.getElementById("class-students-tbody");
+      if (list.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="8" class="py-6 text-center text-slate-500 text-xs sm:text-sm">
+              Lớp <strong>${cls.className}</strong> hiện không có học sinh nào trong danh sách chưa hoàn thành.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = list.map((s, idx) => `
+        <tr class="hover:bg-slate-50">
+          <td class="py-2.5 px-3 text-center font-semibold text-slate-600 border-r border-slate-200">${idx + 1}</td>
+          <td class="py-2.5 px-3 font-bold text-slate-800 border-r border-slate-200">${s.name}</td>
+          <td class="py-2.5 px-2 text-center border-r border-slate-200">
+            <input type="checkbox" ${s.cccd ? "checked" : ""} onchange="toggleStudentFlag(${s.id}, 'cccd', this.checked)" class="w-4 h-4 rounded text-blue-600 cursor-pointer" />
+          </td>
+          <td class="py-2.5 px-2 text-center border-r border-slate-200">
+            <input type="checkbox" ${s.vneid2 ? "checked" : ""} onchange="toggleStudentFlag(${s.id}, 'vneid2', this.checked)" class="w-4 h-4 rounded text-blue-600 cursor-pointer" />
+          </td>
+          <td class="py-2.5 px-2 text-center border-r border-slate-200">
+            <input type="checkbox" ${s.ssk ? "checked" : ""} onchange="toggleStudentFlag(${s.id}, 'ssk', this.checked)" class="w-4 h-4 rounded text-blue-600 cursor-pointer" />
+          </td>
+          <td class="py-2.5 px-2 text-center border-r border-slate-200">
+            <input type="checkbox" ${s.cks ? "checked" : ""} onchange="toggleStudentFlag(${s.id}, 'cks', this.checked)" class="w-4 h-4 rounded text-blue-600 cursor-pointer" />
+          </td>
+          <td class="py-2 px-3 border-r border-slate-200">
+            <input type="text" value="${s.reason}" onchange="updateStudentReason(${s.id}, this.value)"
+              class="w-full bg-white border border-slate-200 hover:border-slate-300 focus:border-blue-500 rounded px-2.5 py-1 text-xs sm:text-sm text-slate-700 focus:outline-none" />
+          </td>
+          <td class="py-2 px-2 text-center">
+            <button onclick="removeStudent(${s.id})" title="Xóa khỏi danh sách chưa hoàn thành"
+              class="inline-flex items-center justify-center p-1.5 rounded-lg text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+              </svg>
+            </button>
+          </td>
+        </tr>
+      `).join("");
+    }
+
+    function toggleStudentFlag(studentId, field, checked) {
+      const st = studentsData.find(s => s.id === studentId);
+      if (st) {
+        st[field] = checked;
+        saveAppState();
+      }
+    }
+
+    function updateStudentReason(studentId, newReason) {
+      const st = studentsData.find(s => s.id === studentId);
+      if (st) {
+        st.reason = newReason.trim();
+        saveAppState();
+      }
+    }
+
+    function removeStudent(studentId) {
+      studentsData = studentsData.filter(s => s.id !== studentId);
+      saveAppState();
+      renderClassStudentsTable();
+      showToast("Đã xóa học sinh khỏi danh sách chưa hoàn thành.", "info");
+    }
+
+    function openAddStudentModal() {
+      document.getElementById("modal-student-name").value = "";
+      document.getElementById("modal-student-reason").value = "";
+      document.getElementById("modal-chk-cccd").checked = false;
+      document.getElementById("modal-chk-vneid2").checked = false;
+      document.getElementById("modal-chk-ssk").checked = true;
+      document.getElementById("modal-chk-cks").checked = false;
+
+      const modal = document.getElementById("add-student-modal");
+      modal.classList.remove("hidden");
+      modal.classList.add("flex");
+    }
+
+    function closeAddStudentModal() {
+      const modal = document.getElementById("add-student-modal");
+      modal.classList.add("hidden");
+      modal.classList.remove("flex");
+    }
+
+    function confirmAddStudent() {
+      const name = document.getElementById("modal-student-name").value.trim();
+      const reason = document.getElementById("modal-student-reason").value.trim();
+      if (!name || !reason) {
+        showToast("Vui lòng nhập đầy đủ họ tên học sinh và lý do chưa hoàn thành.", "error");
+        return;
+      }
+
+      const cls = getCurrentClass();
+      const newId = studentsData.reduce((max, s) => Math.max(max, s.id), 0) + 1;
+      studentsData.push({
+        id: newId,
+        name,
+        className: cls.className,
+        cccd: document.getElementById("modal-chk-cccd").checked,
+        vneid2: document.getElementById("modal-chk-vneid2").checked,
+        ssk: document.getElementById("modal-chk-ssk").checked,
+        cks: document.getElementById("modal-chk-cks").checked,
+        reason
+      });
+
+      saveAppState();
+      closeAddStudentModal();
+      renderClassStudentsTable();
+      showToast(`Đã thêm học sinh ${name} vào danh sách lớp ${cls.className}.`, "success");
+    }
+
+    // =========================================================================
+    // 7. LƯU & GỬI DỮ LIỆU LÊN GOOGLE SHEETS
+    // =========================================================================
+    async function saveCurrentClassReport() {
+      const cls = getCurrentClass();
+      const gvcn = document.getElementById("input-reporter").value.trim();
+      const phone = document.getElementById("input-phone").value.trim();
+      const week = document.getElementById("input-week").value;
+      if (!gvcn) {
+        showToast("Vui lòng nhập họ tên Giáo viên chủ nhiệm.", "error");
+        return;
+      }
+
+      const now = new Date();
+      const timeStr = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")} ${String(now.getDate()).padStart(2, "0")}/${String(now.getMonth() + 1).padStart(2, "0")}/${now.getFullYear()}`;
+      cls.gvcn = gvcn;
+      cls.phone = phone;
+      cls.week = week;
+      cls.updatedAt = timeStr;
+      saveAppState();
+      populateClassSelect();
+      renderClassForm();
+
+      const gasUrl = localStorage.getItem(STORAGE_KEY_GAS_URL);
+      if (gasUrl && gasUrl.startsWith("https://script.google.com/")) {
+        const btn = document.getElementById("btn-save-report");
+        btn.disabled = true;
+        btn.classList.add("opacity-75");
+        try {
+          const classStudents = studentsData.filter(s => s.className === cls.className);
+          await fetch(gasUrl, {
+            method: "POST",
+            mode: "no-cors",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              classData: cls,
+              unfinishedStudents: classStudents
+            })
+          });
+          showToast(`Đã lưu & gửi báo cáo lớp ${cls.className} (GVCN: ${cls.gvcn}) lên Google Sheets!`, "success");
+        } catch (err) {
+          showToast(`Đã lưu trên máy, nhưng lỗi gửi Google Sheets: ${err.message}`, "error");
+        } finally {
+          btn.disabled = false;
+          btn.classList.remove("opacity-75");
+        }
+      } else {
+        showToast(`Đã lưu báo cáo lớp ${cls.className} (GVCN: ${cls.gvcn}) thành công!`, "success");
+      }
+    }
+
+    async function syncFromGoogleSheets() {
+      const gasUrl = localStorage.getItem(STORAGE_KEY_GAS_URL);
+      if (!gasUrl || !gasUrl.startsWith("https://script.google.com/")) {
+        showToast("Dữ liệu hiện tại đang dùng bản chuẩn Sheet T47 (840 HS). Dán Web App URL ở Tab 3 để kéo dữ liệu trực tiếp từ Google Sheets.", "info");
+        return;
+      }
+      try {
+        showToast(`Đang tải dữ liệu mới nhất từ sheet ${selectedWeek} trên Google Sheets...`, "info");
+        const separator = gasUrl.includes("?") ? "&" : "?";
+        const res = await fetch(`${gasUrl}${separator}week=${encodeURIComponent(selectedWeek)}`);
+        const json = await res.json();
+        if (json && json.status === "success") {
+          if (Array.isArray(json.classes) && json.classes.length > 0) {
+            classesData = json.classes;
+          }
+          if (Array.isArray(json.students)) {
+            studentsData = json.students;
+          }
+          saveAppState();
+          populateClassSelect();
+          renderClassForm();
+          if (!document.getElementById("tab-summary").classList.contains("hidden")) {
+            renderSummaryTab();
+          }
+          showToast(`Đã đồng bộ dữ liệu trực tiếp từ sheet ${json.week || selectedWeek} thành công!`, "success");
+        } else {
+          showToast("Phản hồi từ Google Sheets không hợp lệ.", "error");
+        }
+      } catch (e) {
+        showToast("Không thể kết nối tới URL Google Sheets. Kiểm tra lại quyền truy cập Web App (Anyone).", "error");
+      }
+    }
+
+    // =========================================================================
+    // 8. TAB 2: TỔNG HỢP TOÀN TRƯỜNG & DANH SÁCH CHƯA HOÀN THÀNH
+    // =========================================================================
+    function renderSummaryTab() {
+      const summaryLabel = document.getElementById("summary-week-label");
+      if (summaryLabel) summaryLabel.textContent = selectedWeek.replace("T", "TUẦN ");
+
+      // Calculate totals
+      const sumGroup = (arr) => arr.reduce((acc, c) => {
+        acc.total += Number(c.total) || 0;
+        acc.cccdDone += Number(c.cccdDone) || 0;
+        acc.cccdPending += Number(c.cccdPending) || 0;
+        acc.vneid2Done += Number(c.vneid2Done) || 0;
+        acc.vneid2Pending += Number(c.vneid2Pending) || 0;
+        acc.sskDone += Number(c.sskDone) || 0;
+        acc.sskPending += Number(c.sskPending) || 0;
+        acc.asxhDone += Number(c.asxhDone) || 0;
+        acc.asxhPending += Number(c.asxhPending) || 0;
+        acc.cksDone += Number(c.cksDone) || 0;
+        acc.cksPending += Number(c.cksPending) || 0;
+        return acc;
+      }, { total: 0, cccdDone: 0, cccdPending: 0, vneid2Done: 0, vneid2Pending: 0, sskDone: 0, sskPending: 0, asxhDone: 0, asxhPending: 0, cksDone: 0, cksPending: 0 });
+
+      const thcsClasses = classesData.filter(c => c.level === "THCS");
+      const thptClasses = classesData.filter(c => c.level === "THPT");
+
+      const sumTHCS = sumGroup(thcsClasses);
+      const sumTHPT = sumGroup(thptClasses);
+      const sumAll = sumGroup(classesData);
+
+      // Render KPI Cards
+      const kpiContainer = document.getElementById("kpi-cards-container");
+      const kpis = [
+        { title: "Tổng số học sinh", main: `${sumAll.total} HS`, sub: `THCS: ${sumTHCS.total} HS • THPT: ${sumTHPT.total} HS`, color: "border-blue-600 bg-blue-50/40 text-[#0d3b8e]" },
+        { title: "Định danh mức 2", main: `${sumAll.vneid2Done} / ${sumAll.vneid2Pending}`, sub: `Đã ĐK: ${sumAll.vneid2Done} • Chưa ĐK: ${sumAll.vneid2Pending} (${calcPercent(sumAll.vneid2Done, sumAll.total)})`, color: "border-indigo-500 bg-indigo-50/40 text-indigo-900" },
+        { title: "Sổ Sức khỏe điện tử", main: `${sumAll.sskDone} / ${sumAll.sskPending}`, sub: `Đã ĐK: ${sumAll.sskDone} • Chưa ĐK: ${sumAll.sskPending} HS`, color: "border-emerald-500 bg-emerald-50/40 text-emerald-900" },
+        { title: "TK An sinh xã hội", main: `${sumAll.asxhDone} / ${sumAll.asxhPending}`, sub: `Đã ĐK: ${sumAll.asxhDone} • Chưa ĐK: ${sumAll.asxhPending} (≥14t)`, color: "border-cyan-500 bg-cyan-50/40 text-cyan-900" },
+        { title: "Chữ ký số (THPT)", main: `${sumTHPT.cksDone} / ${sumTHPT.cksPending}`, sub: `Đã ĐK: ${sumTHPT.cksDone} • Chưa ĐK: ${sumTHPT.cksPending} HS THPT`, color: "border-amber-500 bg-amber-50/40 text-amber-900" }
+      ];
+
+      kpiContainer.innerHTML = kpis.map(k => `
+        <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-200 border-l-4 ${k.color}">
+          <div class="text-xs font-bold uppercase text-slate-500">${k.title}</div>
+          <div class="text-xl sm:text-2xl font-extrabold mt-1">${k.main}</div>
+          <div class="text-xs font-medium text-slate-600 mt-1">${k.sub}</div>
+        </div>
+      `).join("");
+
+      // Render Table Rows
+      const renderClassRow = (c, idx) => `
+        <tr class="hover:bg-blue-50/40 text-center">
+          <td class="py-2 px-2 border-r border-slate-200 text-slate-500">${idx}</td>
+          <td class="py-2 px-2 border-r border-slate-200 font-bold text-[#0d3b8e]">${c.className}</td>
+          <td class="py-2 px-3 border-r border-slate-200 text-left font-semibold text-slate-800">${c.gvcn}</td>
+          <td class="py-2 px-2 border-r border-slate-200 font-bold">${c.total}</td>
+          <td class="py-2 px-1.5 border-r border-slate-200 text-emerald-700 font-semibold">${c.cccdDone}</td>
+          <td class="py-2 px-1.5 border-r border-slate-200 ${c.cccdPending > 0 ? 'text-rose-600 font-bold bg-rose-50/50' : 'text-slate-400'}">${c.cccdPending}</td>
+          <td class="py-2 px-1.5 border-r border-slate-200 text-emerald-700 font-semibold">${c.vneid2Done}</td>
+          <td class="py-2 px-1.5 border-r border-slate-200 ${c.vneid2Pending > 0 ? 'text-rose-600 font-bold bg-rose-50/50' : 'text-slate-400'}">${c.vneid2Pending}</td>
+          <td class="py-2 px-1.5 border-r border-slate-200 text-emerald-700 font-semibold">${c.sskDone}</td>
+          <td class="py-2 px-1.5 border-r border-slate-200 ${c.sskPending > 0 ? 'text-rose-600 font-bold bg-rose-50/50' : 'text-slate-400'}">${c.sskPending}</td>
+          <td class="py-2 px-1.5 border-r border-slate-200 text-emerald-700 font-semibold">${c.asxhDone}</td>
+          <td class="py-2 px-1.5 border-r border-slate-200 ${c.asxhPending > 0 ? 'text-rose-600 font-semibold' : 'text-slate-400'}">${c.asxhPending}</td>
+          <td class="py-2 px-1.5 border-r border-slate-200 text-emerald-700 font-semibold">${c.level === 'THPT' ? c.cksDone : '—'}</td>
+          <td class="py-2 px-1.5 ${c.level === 'THPT' && c.cksPending > 0 ? 'text-rose-600 font-bold bg-rose-50/50' : 'text-slate-400'}">${c.level === 'THPT' ? c.cksPending : '—'}</td>
+        </tr>
+      `;
+
+      const renderSubtotalRow = (label, s, bgClass) => `
+        <tr class="${bgClass} font-extrabold text-center border-y-2 border-slate-300">
+          <td colspan="3" class="py-2.5 px-3 text-left uppercase border-r border-slate-300">${label}</td>
+          <td class="py-2.5 px-2 border-r border-slate-300">${s.total}</td>
+          <td class="py-2.5 px-1.5 border-r border-slate-300 text-emerald-800">${s.cccdDone}</td>
+          <td class="py-2.5 px-1.5 border-r border-slate-300 text-rose-700">${s.cccdPending}</td>
+          <td class="py-2.5 px-1.5 border-r border-slate-300 text-emerald-800">${s.vneid2Done}</td>
+          <td class="py-2.5 px-1.5 border-r border-slate-300 text-rose-700">${s.vneid2Pending}</td>
+          <td class="py-2.5 px-1.5 border-r border-slate-300 text-emerald-800">${s.sskDone}</td>
+          <td class="py-2.5 px-1.5 border-r border-slate-300 text-rose-700">${s.sskPending}</td>
+          <td class="py-2.5 px-1.5 border-r border-slate-300 text-emerald-800">${s.asxhDone}</td>
+          <td class="py-2.5 px-1.5 border-r border-slate-300 text-rose-700">${s.asxhPending}</td>
+          <td class="py-2.5 px-1.5 border-r border-slate-300 text-emerald-800">${s.cksDone}</td>
+          <td class="py-2.5 px-1.5 text-rose-700">${s.cksPending}</td>
+        </tr>
+      `;
+
+      const tbody = document.getElementById("summary-all-classes-tbody");
+      tbody.innerHTML = [
+        ...thcsClasses.map((c, i) => renderClassRow(c, i + 1)),
+        renderSubtotalRow("Cộng cấp THCS (11 lớp)", sumTHCS, "bg-blue-50 text-slate-900"),
+        ...thptClasses.map((c, i) => renderClassRow(c, i + 1)),
+        renderSubtotalRow("Cộng cấp THPT (10 lớp)", sumTHPT, "bg-blue-50 text-slate-900"),
+        renderSubtotalRow("TỔNG CỘNG TOÀN TRƯỜNG (21 LỚP)", sumAll, "bg-amber-100 text-slate-950")
+      ].join("");
+
+      // Populate filter dropdown for unfinished students
+      const classFilter = document.getElementById("search-student-class");
+      const currentFilterVal = classFilter.value || "ALL";
+      classFilter.innerHTML = `<option value="ALL">Tất cả các lớp (${studentsData.length} HS)</option>` +
+        classesData.map(c => `<option value="${c.className}">Lớp ${c.className}</option>`).join("");
+      classFilter.value = currentFilterVal;
+
+      renderAllUnfinishedStudents();
+    }
+
+    function renderAllUnfinishedStudents() {
+      const classFilter = document.getElementById("search-student-class").value;
+      const typeFilter = document.getElementById("search-student-type").value;
+      const keyword = document.getElementById("search-student-keyword").value.toLowerCase().trim();
+
+      document.getElementById("total-unfinished-count").textContent = studentsData.length;
+
+      const filtered = studentsData.filter(s => {
+        const matchClass = classFilter === "ALL" || s.className === classFilter;
+        const matchType = typeFilter === "ALL" || Boolean(s[typeFilter]);
+        const matchKw = !keyword || s.name.toLowerCase().includes(keyword) || s.reason.toLowerCase().includes(keyword) || s.className.toLowerCase().includes(keyword);
+        return matchClass && matchType && matchKw;
+      });
+
+      const tbody = document.getElementById("all-unfinished-tbody");
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="py-6 text-center text-slate-500">Không tìm thấy học sinh phù hợp với điều kiện lọc.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map((s, idx) => `
+        <tr class="hover:bg-slate-50">
+          <td class="py-2 px-2 text-center border-r border-slate-200 text-slate-500">${idx + 1}</td>
+          <td class="py-2 px-3 font-bold text-slate-800 border-r border-slate-200">${s.name}</td>
+          <td class="py-2 px-2 text-center font-bold text-[#0d3b8e] border-r border-slate-200">${s.className}</td>
+          <td class="py-2 px-2 text-center border-r border-slate-200 font-bold text-rose-600">${s.cccd ? "X" : ""}</td>
+          <td class="py-2 px-2 text-center border-r border-slate-200 font-bold text-rose-600">${s.vneid2 ? "X" : ""}</td>
+          <td class="py-2 px-2 text-center border-r border-slate-200 font-bold text-rose-600">${s.ssk ? "X" : ""}</td>
+          <td class="py-2 px-2 text-center border-r border-slate-200 font-bold text-rose-600">${s.cks ? "X" : ""}</td>
+          <td class="py-2 px-3 text-slate-700">${s.reason}</td>
+        </tr>
+      `).join("");
+    }
+
+    // =========================================================================
+    // 9. XUẤT FILE CSV / EXCEL
+    // =========================================================================
+    function downloadCSV(filename, csvContent) {
+      const BOM = "\uFEFF";
+      const blob = new Blob([BOM + csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", filename);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
+
+    function exportSummaryCSV() {
+      const headers = [
+        "STT", "Lớp", "Cấp học", "Giáo viên chủ nhiệm", "Tổng HS",
+        "CCCD Đã xong", "CCCD Chưa xong",
+        "Định danh mức 2 Đã xong", "Định danh mức 2 Chưa xong",
+        "Sổ sức khỏe ĐT Đã ĐK", "Sổ sức khỏe ĐT Chưa ĐK",
+        "TK An sinh XH Đã ĐK", "TK An sinh XH Chưa ĐK",
+        "Chữ ký số Đã ĐK", "Chữ ký số Chưa ĐK"
+      ];
+      const rows = classesData.map((c, idx) => [
+        idx + 1, c.className, c.level, `"${c.gvcn}"`, c.total,
+        c.cccdDone, c.cccdPending,
+        c.vneid2Done, c.vneid2Pending,
+        c.sskDone, c.sskPending,
+        c.asxhDone, c.asxhPending,
+        c.level === "THPT" ? c.cksDone : 0,
+        c.level === "THPT" ? c.cksPending : 0
+      ].join(","));
+
+      downloadCSV("Bao_Cao_De_An_06_THCS_THPT_Na_Phac.csv", [headers.join(","), ...rows].join("\n"));
+      showToast("Đã tải xuống file Báo cáo tổng hợp 21 lớp (.CSV)!", "success");
+    }
+
+    function exportStudentsCSV() {
+      const headers = ["STT", "Họ và tên học sinh", "Lớp", "Thiếu CCCD", "Chưa ĐD mức 2", "Chưa SSKĐT", "Chưa Chữ ký số", "Lý do chưa hoàn thành"];
+      const rows = studentsData.map((s, idx) => [
+        idx + 1,
+        `"${s.name}"`,
+        s.className,
+        s.cccd ? "X" : "",
+        s.vneid2 ? "X" : "",
+        s.ssk ? "X" : "",
+        s.cks ? "X" : "",
+        `"${s.reason.replace(/"/g, '""')}"`
+      ].join(","));
+
+      downloadCSV("Danh_Sach_HS_Chua_Hoan_Thanh_De_An_06.csv", [headers.join(","), ...rows].join("\n"));
+      showToast("Đã tải xuống Danh sách học sinh chưa hoàn thành (.CSV)!", "success");
+    }
+
+    // =========================================================================
+    // 10. TAB 3: QUẢN TRỊ & CẤU HÌNH GOOGLE SHEETS
+    // =========================================================================
+    async function saveAndTestGasConnection() {
+      const url = document.getElementById("input-gas-url").value.trim();
+      localStorage.setItem(STORAGE_KEY_GAS_URL, url);
+      updateConnectionBadge(url);
+
+      if (!url || !url.startsWith("https://script.google.com/")) {
+        showToast("Đã lưu cấu hình. Lưu ý: URL cần bắt đầu bằng https://script.google.com/macros/s/...", "info");
+        return;
+      }
+      try {
+        showToast("Đang lưu cấu hình và kiểm tra kết nối Google Sheets...", "info");
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data && data.status === "success") {
+          showToast("Kết nối thành công! Google Sheets đã sẵn sàng nhận dữ liệu.", "success");
+        } else {
+          showToast("Đã lưu URL nhưng phản hồi từ Apps Script chưa đúng định dạng JSON.", "info");
+        }
+      } catch (e) {
+        showToast("Đã lưu URL. Hãy đảm bảo đã chọn quyền 'Bất kỳ ai (Anyone)' khi Deploy Apps Script.", "error");
+      }
+    }
+
+    function copyAppsScriptCode() {
+      const code = document.getElementById("gas-code-block").textContent;
+      const textarea = document.createElement("textarea");
+      textarea.value = code;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textarea);
+      showToast("Đã sao chép mã Code.gs vào bộ nhớ tạm!", "success");
+    }
+
+    function confirmResetData() {
+      classesData = JSON.parse(JSON.stringify(INITIAL_CLASSES));
+      studentsData = JSON.parse(JSON.stringify(INITIAL_STUDENTS));
+      saveAppState();
+      populateClassSelect();
+      renderClassForm();
+      showToast("Đã khôi phục toàn bộ số liệu gốc từ file Excel báo cáo!", "success");
+    }
+
+    // =========================================================================
+    // KHỞI TẠO ỨNG DỤNG
+    // =========================================================================
+    window.addEventListener("DOMContentLoaded", () => {
+      loadAppState();
+      populateClassSelect();
+      renderClassForm();
+    });
+  </script>
+</body>
+</html>
